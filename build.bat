@@ -44,6 +44,14 @@ if /I "%BUILD_TYPE%"=="release" (
 shift /1
 shift /1
 
+set "EXTRA_GRADLE_ARGS="
+:collect_extra_args
+if "%~1"=="" goto extra_args_done
+set "EXTRA_GRADLE_ARGS=!EXTRA_GRADLE_ARGS! "%~1""
+shift /1
+goto collect_extra_args
+:extra_args_done
+
 set "TASK=:smarttubetv:assemble%TASK_FLAVOR%%TASK_BUILD_TYPE%"
 set "OUTPUT_DIR=%ROOT_DIR%smarttubetv\build\outputs\apk\%FLAVOR%\%BUILD_TYPE%"
 
@@ -54,7 +62,7 @@ if /I "%BUILD_TYPE%"=="release" if not exist "%ROOT_DIR%keystore.properties" (
 )
 
 echo Building %TASK% ...
-call "%ROOT_DIR%gradlew.bat" %TASK% %*
+call "%ROOT_DIR%gradlew.bat" %TASK% %EXTRA_GRADLE_ARGS%
 set "EXIT_CODE=%ERRORLEVEL%"
 
 if "%EXIT_CODE%"=="0" (

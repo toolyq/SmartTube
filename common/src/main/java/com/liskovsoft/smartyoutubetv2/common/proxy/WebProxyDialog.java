@@ -11,6 +11,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+import com.liskovsoft.googlecommon.common.helpers.RetrofitOkHttpHelper;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.helpers.KeyHelpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
@@ -57,8 +58,14 @@ public class WebProxyDialog {
                 showProxyConfigDialog();
             } else {
                 mProxyManager.configureSystemProxy();
+                resetHttpClients();
             }
         }
+    }
+
+    private void resetHttpClients() {
+        OkHttpManager.unhold();
+        RetrofitOkHttpHelper.unhold();
     }
 
     protected void appendStatusMessage(String msgFormat, Object ...args) {
@@ -122,6 +129,7 @@ public class WebProxyDialog {
 
         mProxyManager.saveProxyInfoToPrefs(proxy, true);
         mProxyManager.configureSystemProxy();
+        resetHttpClients();
 
         String[] testUrls = mContext.getString(R.string.proxy_test_urls).split("\n");
         OkHttpClient okHttpClient = OkHttpManager.instance().getClient();
@@ -236,6 +244,7 @@ public class WebProxyDialog {
                 // Proxy saved on OK button press
                 //mProxyManager.saveProxyInfoToPrefs(proxy, true);
                 mProxyManager.configureSystemProxy();
+                resetHttpClients();
                 for (Call call: mUrlTests) call.cancel();
             }
         });

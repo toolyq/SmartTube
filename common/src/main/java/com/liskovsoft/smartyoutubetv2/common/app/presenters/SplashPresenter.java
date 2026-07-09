@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
+import com.liskovsoft.googlecommon.common.helpers.RetrofitOkHttpHelper;
 import com.liskovsoft.mediaserviceinterfaces.oauth.Account;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
+import com.liskovsoft.sharedutils.okhttp.OkHttpManager;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
 import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.smartyoutubetv2.common.R;
@@ -173,6 +175,8 @@ public class SplashPresenter extends BasePresenter<SplashView> {
             // Apply proxy config after global prefs but before starting networking.
             if (GeneralData.instance(getContext()).isProxyEnabled()) {
                 new ProxyManager(getContext()).configureSystemProxy();
+                OkHttpManager.unhold();
+                RetrofitOkHttpHelper.unhold();
             }
         }
     }
