@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal EnableExtensions EnableDelayedExpansion
 
 set "ROOT_DIR=%~dp0"
 pushd "%ROOT_DIR%" >NUL || exit /b 1
@@ -13,7 +13,7 @@ set "FLAVOR=%~1"
 set "BUILD_TYPE=%~2"
 
 if "%FLAVOR%"=="" set "FLAVOR=ststable"
-if "%BUILD_TYPE%"=="" set "BUILD_TYPE=release"
+if "%BUILD_TYPE%"=="" set "BUILD_TYPE=debug"
 
 if /I "%FLAVOR%"=="stable" set "FLAVOR=ststable"
 if /I "%FLAVOR%"=="beta" set "FLAVOR=stbeta"
@@ -45,6 +45,13 @@ shift /1
 shift /1
 
 set "TASK=:smarttubetv:assemble%TASK_FLAVOR%%TASK_BUILD_TYPE%"
+set "OUTPUT_DIR=%ROOT_DIR%smarttubetv\build\outputs\apk\%FLAVOR%\%BUILD_TYPE%"
+
+if /I "%BUILD_TYPE%"=="release" if not exist "%ROOT_DIR%keystore.properties" (
+    echo Warning: keystore.properties was not found.
+    echo Release APKs may be unsigned and fail to install. Use "build.bat stable debug" for a directly installable test build.
+    echo.
+)
 
 echo Building %TASK% ...
 call "%ROOT_DIR%gradlew.bat" %TASK% %*
@@ -53,6 +60,18 @@ set "EXIT_CODE=%ERRORLEVEL%"
 if "%EXIT_CODE%"=="0" (
     echo.
     echo Build finished. APK files are in smarttubetv\build\outputs\apk\%FLAVOR%\%BUILD_TYPE%\
+    if exist "%OUTPUT_DIR%" (
+        echo.
+        echo Generated APK files:
+        for %%F in ("%OUTPUT_DIR%\*.apk") do echo   %%~nxF
+
+        set "UNIVERSAL_APK="
+        for %%F in ("%OUTPUT_DIR%\*universal*.apk") do set "UNIVERSAL_APK=%%~nxF"
+        if not "!UNIVERSAL_APK!"=="" (
+            echo.
+            echo For Android 6 TV, install the universal APK first: !UNIVERSAL_APK!
+        )
+    )
 ) else (
     echo.
     echo Build failed with exit code %EXIT_CODE%.
@@ -77,6 +96,6 @@ echo   build.bat
 echo   build.bat beta debug
 echo   build.bat fdroid release --stacktrace
 echo.
-echo Defaults: stable release
+echo Defaults: stable debug
 popd >NUL
 exit /b %USAGE_EXIT_CODE%
